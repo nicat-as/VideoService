@@ -24,22 +24,35 @@ public class ApiController {
     @Value("${api.video.sandbox}")
     private String sandboxKey;
 
+    private final Client client;
+
+    private final StorageService storageService;
+
     @Autowired
-    private StorageService storageService;
+    public ApiController(Client client, StorageService storageService) {
+        this.client = client;
+        this.storageService = storageService;
+    }
 
     @PostMapping("/upload")
     public ResponseEntity<?> upload(@RequestParam(name = "file") MultipartFile file){
         Video video = null;
+        Long time = null;
         String filePath;
         try {
+            Long start = System.currentTimeMillis();
             filePath = storageService.store(file);
-            Client client = new ClientFactory().createSandbox(sandboxKey);
+            //api giris
             video = client.videos.upload(new File(filePath));
+            Long end = System.currentTimeMillis();
+            time = end-start;
+
+
             storageService.deleteFile(filePath);
         } catch (Exception e) {
             e.printStackTrace();
         }finally {
-            return new ResponseEntity(video.videoId, HttpStatus.OK);
+            return new ResponseEntity(video.videoId + "\n" + time, HttpStatus.OK);
         }
     }
 }
