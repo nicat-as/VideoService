@@ -2,6 +2,7 @@ package com.uniso.video.controller;
 
 import com.uniso.video.sdk.Client;
 import com.uniso.video.sdk.domain.video.Video;
+import com.uniso.video.service.AsyncService;
 import com.uniso.video.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.util.concurrent.Future;
 
 @RestController
 @RequestMapping("api")
@@ -25,30 +27,31 @@ public class ApiController {
     private final Client client;
 
     private final StorageService storageService;
+    private final AsyncService asyncService;
+
 
     @Autowired
-    public ApiController(Client client, StorageService storageService) {
+    public ApiController(Client client, StorageService storageService, AsyncService asyncService) {
         this.client = client;
         this.storageService = storageService;
+        this.asyncService = asyncService;
     }
 
     @PostMapping("/upload")
     public ResponseEntity<?> upload(@RequestParam(name = "file") MultipartFile[] file) {
-        Video video = null;
-        Long time = null;
-        String filePath;
+        StringBuilder videoID = new StringBuilder();
         try {
             for (MultipartFile f : file) {
-                filePath = storageService.store(f);
-                //api entrance
-                video = client.videos.upload(new File(filePath));
-                storageService.deleteFile(filePath);
+                Future<String> stringFuture = asyncService.execute(f);
+//                if (stringFuture.isDone()){
+                    videoID.append(stringFuture.get());
+//                }
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            return new ResponseEntity(video.videoId, HttpStatus.OK);
+            return new ResponseEntity(videoID, HttpStatus.OK);
         }
     }
 
