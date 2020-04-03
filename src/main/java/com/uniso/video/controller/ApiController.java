@@ -1,9 +1,7 @@
 package com.uniso.video.controller;
 
 import com.uniso.video.sdk.Client;
-import com.uniso.video.sdk.ClientFactory;
 import com.uniso.video.sdk.domain.video.Video;
-import com.uniso.video.sdk.domain.video.VideoInput;
 import com.uniso.video.service.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,24 +33,27 @@ public class ApiController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<?> upload(@RequestParam(name = "file") MultipartFile file){
+    public ResponseEntity<?> upload(@RequestParam(name = "file") MultipartFile[] file) {
         Video video = null;
         Long time = null;
         String filePath;
         try {
-            Long start = System.currentTimeMillis();
-            filePath = storageService.store(file);
-            //api giris
-            video = client.videos.upload(new File(filePath));
-            Long end = System.currentTimeMillis();
-            time = end-start;
+            for (MultipartFile f : file) {
+                filePath = storageService.store(f);
+                //api entrance
+                video = client.videos.upload(new File(filePath));
+                storageService.deleteFile(filePath);
+            }
 
-
-            storageService.deleteFile(filePath);
         } catch (Exception e) {
             e.printStackTrace();
-        }finally {
-            return new ResponseEntity(video.videoId + "\n" + time, HttpStatus.OK);
+        } finally {
+            return new ResponseEntity(video.videoId, HttpStatus.OK);
         }
+    }
+
+    @RequestMapping("/test")
+    public ResponseEntity<?> test(@RequestParam(name = "name") String name){
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
