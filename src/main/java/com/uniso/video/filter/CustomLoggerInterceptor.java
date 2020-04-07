@@ -1,5 +1,7 @@
 package com.uniso.video.filter;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -18,19 +20,21 @@ import java.util.stream.Collectors;
 public class CustomLoggerInterceptor implements HandlerInterceptor {
 
     private Long start;
+    private final Logger logger = LogManager.getLogger(CustomLoggerInterceptor.class);
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         start = System.currentTimeMillis();
-        System.out.println(
-                request.getRequestURI()
-                        + "\n"
+        logger.info(
+                "[REQUEST] - \t"
+                        + request.getRequestURI()
+                        + "\t"
                         + getHeaders(request)
-                        + "\n"
+                        + "\t"
                         + request.getMethod()
-                        + "\n"
+                        + "\t"
                         + getRequestBody(request)
-                        + "\n"
+                        + "\t"
         );
         return true;
     }
@@ -39,12 +43,16 @@ public class CustomLoggerInterceptor implements HandlerInterceptor {
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
         Long end = System.currentTimeMillis();
         end -= this.start;
-        System.out.println(TimeUnit.SECONDS.convert(end, TimeUnit.MILLISECONDS));
-        System.out.println(
-                response.getStatus()
-                        + "\n"
+        logger.info("Request fulfilling time : "
+                + TimeUnit.SECONDS.convert(end, TimeUnit.MILLISECONDS)
+                + " "
+                + TimeUnit.SECONDS.toString());
+        logger.info(
+                "[RESPONSE] - \t"
+                        + response.getStatus()
+                        + "\t"
                         + getHeaders(response)
-                +"\n"
+                        + "\t"
         );
     }
 

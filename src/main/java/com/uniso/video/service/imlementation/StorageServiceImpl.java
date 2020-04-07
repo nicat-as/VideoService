@@ -2,6 +2,8 @@ package com.uniso.video.service.imlementation;
 
 import com.uniso.video.exception.StorageException;
 import com.uniso.video.service.StorageService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
@@ -19,6 +21,9 @@ import java.util.stream.Stream;
 
 @Service
 public class StorageServiceImpl implements StorageService {
+
+    private final Logger logger = LogManager.getLogger(StorageServiceImpl.class);
+
     @Value("${api.uploadDir}")
     private String path;
 
@@ -27,6 +32,7 @@ public class StorageServiceImpl implements StorageService {
     public void init() {
         try {
             Files.createDirectories(Paths.get(path));
+            logger.info(Thread.currentThread().getName() + " Creating directory : " + this.path);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -50,9 +56,9 @@ public class StorageServiceImpl implements StorageService {
                 Files.copy(inputStream, Paths.get(this.path).resolve(filename),
                         StandardCopyOption.REPLACE_EXISTING);
                 filename = Paths.get(this.path).resolve(filename).toString();
+                logger.info(Thread.currentThread().getName() + " File copied : " + filename);
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new StorageException("Failed to store file " + filename, e);
         }
 
@@ -63,7 +69,9 @@ public class StorageServiceImpl implements StorageService {
     public void deleteFile(String dir) {
         try {
             Files.delete(Paths.get(dir));
+            logger.info(Thread.currentThread().getName() + "Deleting...");
         } catch (IOException e) {
+            logger.error("Error happened during deleting path : ", e);
             e.printStackTrace();
         }
     }
@@ -81,8 +89,7 @@ public class StorageServiceImpl implements StorageService {
             return Files.walk(path, 1)
                     .filter(p -> !p.equals(path))
                     .map(path::relativize);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new StorageException("Failed to read stored files", e);
         }
 
