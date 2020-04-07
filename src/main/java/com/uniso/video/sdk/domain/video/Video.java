@@ -1,8 +1,11 @@
 package com.uniso.video.sdk.domain.video;
 
+import lombok.ToString;
+
 import java.util.Calendar;
 import java.util.Map;
 
+@ToString
 public class Video extends VideoInput {
     public static class SourceInfo {
         public final String type;
