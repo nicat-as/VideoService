@@ -16,11 +16,15 @@ import java.util.Optional;
 @Service
 public class ApiServiceImpl implements ApiService {
 
-    @Autowired
-    private Client client;
+    private final Client client;
+
+    private final StorageService storageService;
 
     @Autowired
-    private StorageService storageService;
+    public ApiServiceImpl(Client client, StorageService storageService) {
+        this.client = client;
+        this.storageService = storageService;
+    }
 
 
     @Override
