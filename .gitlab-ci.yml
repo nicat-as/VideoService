@@ -26,7 +26,7 @@ production:
     - wget -qO- https://cli-assets.heroku.com/install-ubuntu.sh | sh
     - dpl --provider=heroku --app=$HEROKU_APP_NAME --api-key=$HEROKU_APP_KEY
     - export HEROKU_APP_KEY=$HEROKU_APP_KEY
-    - Heroku run --app $HEROKU_APP_NAME migrate
+    - heroku run --app $HEROKU_APP_NAME migrate
   environment:
     name: production
     url: $HEROKU_APP_URL
