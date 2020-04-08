@@ -28,16 +28,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         ApiKeyAuthFilter filter = new ApiKeyAuthFilter(header);
-        filter.setAuthenticationManager(new AuthenticationManager() {
-            @Override
-            public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-                String principal = (String) authentication.getPrincipal();
-                if (!value.equals(principal)) {
-                    throw new BadCredentialsException("Api key is not true!");
-                }
-                authentication.setAuthenticated(true);
-                return authentication;
+        filter.setAuthenticationManager(authentication -> {
+            String principal = ((String) authentication.getPrincipal()).trim();
+            if (!value.equals(principal)) {
+                throw new BadCredentialsException("Api key is not true!");
             }
+            authentication.setAuthenticated(true);
+            return authentication;
         });
 
         http
@@ -47,11 +44,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and().addFilter(filter)
                 .authorizeRequests().anyRequest().authenticated();
 
-        http
-                .logout().disable()
-                .formLogin().disable()
-                .httpBasic().disable()
-                .cors().disable();
+        http.cors();
 
     }
 }
