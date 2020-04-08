@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping("api")
 public class ApiController {
@@ -19,7 +20,6 @@ public class ApiController {
     public ApiController(ApiService apiService) {
         this.apiService = apiService;
     }
-
 
 
     @PostMapping("/upload")
