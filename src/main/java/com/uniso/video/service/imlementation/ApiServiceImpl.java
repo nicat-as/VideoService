@@ -1,5 +1,6 @@
 package com.uniso.video.service.imlementation;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uniso.video.exception.StorageException;
 import com.uniso.video.sdk.Client;
 import com.uniso.video.sdk.domain.exception.ResponseException;
@@ -28,13 +29,15 @@ public class ApiServiceImpl implements ApiService {
 
 
     @Override
-    public Optional<Video> upload(VideoInput videoInput, MultipartFile file) {
+    public Optional<Video> upload(String videoInput, MultipartFile file) {
         Optional<Video> optionalVideo = Optional.empty();
         try {
             String filePath = storageService.store(file);
             logger.info(Thread.currentThread().getName() + " filePath is : " + filePath);
 
-            Video video = client.videos.upload(new File(filePath), videoInput);
+            ObjectMapper mapper = new ObjectMapper();
+            VideoInput input = mapper.readValue(videoInput,VideoInput.class);
+            Video video = client.videos.upload(new File(filePath), input);
             logger.info(Thread.currentThread().getName() + " Video information : " + video);
 
             optionalVideo = Optional.of(video);

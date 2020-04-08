@@ -1,18 +1,11 @@
 package com.uniso.video.controller;
 
-import com.uniso.video.sdk.Client;
 import com.uniso.video.sdk.domain.video.Video;
 import com.uniso.video.sdk.domain.video.VideoInput;
 import com.uniso.video.service.ApiService;
-import com.uniso.video.service.StorageService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
@@ -28,15 +21,21 @@ public class ApiController {
     }
 
 
+
     @PostMapping("/upload")
-    public ResponseEntity<?> upload(@RequestPart("file") MultipartFile file,
-                                    @RequestPart("video") VideoInput videoInput) {
+    public ResponseEntity<?> upload(@RequestPart("videoFile") MultipartFile file,
+                                    @RequestPart("videoInput") String videoInput) {
         ResponseEntity responseEntity = new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
-        Optional<Video> optionalVideo = apiService.upload(videoInput,file);
-        if (optionalVideo.isPresent()){
-            responseEntity = new ResponseEntity(optionalVideo.get(),HttpStatus.OK);
+        Optional<Video> optionalVideo = apiService.upload(videoInput, file);
+        if (optionalVideo.isPresent()) {
+            responseEntity = new ResponseEntity(optionalVideo.get(), HttpStatus.OK);
         }
         return responseEntity;
+    }
+
+    @PostMapping("/test")
+    public ResponseEntity<?> test(@RequestBody VideoInput videoInput) {
+        return new ResponseEntity<>(videoInput, HttpStatus.OK);
     }
 
 }

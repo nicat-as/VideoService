@@ -8,5 +8,5 @@ import java.util.Optional;
 
 public interface ApiService {
 
-    Optional<Video> upload(VideoInput videoInput, MultipartFile file);
+    Optional<Video> upload(String videoInput, MultipartFile file);
 }
