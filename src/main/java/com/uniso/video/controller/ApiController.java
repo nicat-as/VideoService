@@ -55,7 +55,7 @@ public class ApiController {
             Status status;
             do {
                 status = videoService.getStatus(optionalVideo.get().videoId).get();
-                Thread.sleep(100);
+                Thread.sleep(700);
             } while (!status.encoding.playable);
             VideoResponse response = new VideoResponse(optionalVideo.get(), status);
             responseEntity = new ResponseEntity(response, HttpStatus.OK);
