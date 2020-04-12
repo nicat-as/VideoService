@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,10 +64,13 @@ public class VideoServiceImpl implements VideoService {
     public Optional<Status> getStatus(String status) {
         Optional<Status> optionalStatus = Optional.empty();
         try {
+            logger.info("Getting status .. ");
             Status status1 = client.videos.getStatus(status);
+            logger.info("Status : " + status);
             optionalStatus = Optional.of(status1);
         } catch (ResponseException e) {
             e.printStackTrace();
+            logger.error("Not getting status : " + e);
         } finally {
             return optionalStatus;
         }
@@ -77,11 +81,15 @@ public class VideoServiceImpl implements VideoService {
     public List<Video> getVideos() {
         List<Video> list = new ArrayList<>();
         try {
+            logger.info("Getting video List .. ");
             Iterable<Video> videos = client.videos.list();
             for (Video v : videos) {
                 list.add(v);
             }
+            logger.info("Video list got");
+
         } catch (ResponseException e) {
+            logger.error("Couldn't get videos", e);
             e.printStackTrace();
         } finally {
             return list;
@@ -91,15 +99,65 @@ public class VideoServiceImpl implements VideoService {
     @Override
     public List<Video> getVideosByQuery(QueryParams params) {
         List<Video> videos = new ArrayList<>();
+        logger.info("Getting video list by query ...  ");
         try {
             Iterable<Video> iterable = client.videos.list(params);
             iterable.forEach(i -> videos.add(i));
+            logger.info("Video list got!");
         } catch (ResponseException | URISyntaxException e) {
+            logger.error("Couldn't get video by query ", e);
             e.printStackTrace();
         } finally {
             return videos;
         }
     }
 
+    @Override
+    public Optional<Video> showVideo(String videoId) {
+        Optional<Video> optionalVideo = Optional.empty();
+        try {
+            logger.info("Getting video : " + videoId);
+            Video video = client.videos.get(videoId);
+            logger.info("Video : " + video);
+            optionalVideo = Optional.of(video);
+        } catch (ResponseException e) {
+            logger.error("Couldn't get video by videoId ", e);
+            e.printStackTrace();
+        } finally {
+            return optionalVideo;
+        }
+    }
 
+    @Override
+    public Optional<Video> uploadThumbnail(String videoId, MultipartFile image) {
+        Optional<Video> optionalVideo = Optional.empty();
+        try {
+            logger.info("Storing image file.. ");
+            String path = storageService.store(image);
+            Video video = client.videos.uploadThumbnail(videoId, new File(path));
+            logger.info("Uploaded thumbnail " + video.videoId + " : " + video.assets.get("thumbnail"));
+            storageService.deleteFile(path);
+            logger.info("Deleting path : " + path);
+            optionalVideo = Optional.of(video);
+
+        } catch (ResponseException | IOException e) {
+            e.printStackTrace();
+        } finally {
+            return optionalVideo;
+        }
+    }
+
+    @Override
+    public Optional<Video> pickThumbnail(String videoId, String pattern) {
+        Optional<Video> optionalVideo = Optional.empty();
+        try {
+            Video video = client.videos.updateThumbnail(videoId, pattern);
+            optionalVideo = Optional.of(video);
+        } catch (ResponseException e) {
+            e.printStackTrace();
+        } finally {
+            return optionalVideo;
+        }
+
+    }
 }
